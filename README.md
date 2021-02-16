@@ -9,7 +9,7 @@
 
  Here is my example code. Use it as you see fit.
 
- It is all based of the example I found on this page:
+ It is all based on the example I found on this page:
 
  https://learn.adafruit.com/media-dial
 

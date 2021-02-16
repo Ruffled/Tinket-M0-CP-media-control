@@ -24,15 +24,10 @@ rot_b.direction = Direction.INPUT
 rot_b.pull = Pull.UP
 
 # Used to do HID output, see below
-doing_keyboard = True
+cc = ConsumerControl(usb_hid.devices)
 
-if doing_keyboard:
-    cc = ConsumerControl(usb_hid.devices)
+# MAIN LOOP
 
-######################### MAIN LOOP ##############################
-
-# the counter counts up and down, it can roll over! 16-bit value
-encoder_counter = 0
 # direction tells you the last tick which way it went
 encoder_direction = 0
 
@@ -90,13 +85,9 @@ while True:
 
             # check first and last edge
             if (rising_edge == A_POSITION) and (falling_edge == B_POSITION):
-                encoder_counter -= 1
                 encoder_direction = -1
-                print("%d dec" % encoder_counter)
             elif (rising_edge == B_POSITION) and (falling_edge == A_POSITION):
-                encoder_counter += 1
                 encoder_direction = 1
-                print("%d inc" % encoder_counter)
             else:
                 # (shrug) something didn't work out, oh well!
                 encoder_direction = 0
@@ -106,14 +97,12 @@ while True:
 
     rotary_prev_state = rotary_curr_state
 
-    # Check if rotary encoder went up
-    if doing_keyboard:
-        if encoder_direction == 1:
-            cc.send(ConsumerControlCode.VOLUME_INCREMENT)
+    if encoder_direction == 1:
+        cc.send(ConsumerControlCode.VOLUME_INCREMENT)
 
-        # Check if rotary encoder went down
-        if encoder_direction == -1:
-            cc.send(ConsumerControlCode.VOLUME_DECREMENT)
+    # Check if rotary encoder went down
+    if encoder_direction == -1:
+        cc.send(ConsumerControlCode.VOLUME_DECREMENT)
 
     # Button was 'just pressed'
     if current_button != last_button:
@@ -137,18 +126,16 @@ while True:
                 double_pending = False
                 long_press = False
 
-            print("Button Released, time", str(button_delta), "double",
-                str(double_click), "long", str(long_press), sep=" ")
+            # print("Button Released, time", str(button_delta), "double", str(double_click), "long", str(long_press), sep=" ")
 
-            if doing_keyboard:
-                if long_press:
-                    cc.send(ConsumerControlCode.SCAN_PREVIOUS_TRACK)
-                    long_press = False
-                elif double_click:
-                    cc.send(ConsumerControlCode.SCAN_NEXT_TRACK)
-                    double_click = False
-                else:
-                    cc.send(ConsumerControlCode.PLAY_PAUSE)
+            if long_press:
+                cc.send(ConsumerControlCode.SCAN_PREVIOUS_TRACK)
+                long_press = False
+            elif double_click:
+                cc.send(ConsumerControlCode.SCAN_NEXT_TRACK)
+                double_click = False
+            else:
+                cc.send(ConsumerControlCode.PLAY_PAUSE)
         else:
             if double_pending:
                 button_delta = time.monotonic() - button_pressed
